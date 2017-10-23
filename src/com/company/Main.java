@@ -37,7 +37,7 @@ public class Main {
         System.out.println(tree);
     }
 
-    private static void simulateRR(AVLTree<Integer> tree) {
+    private static void simulateLL(AVLTree<Integer> tree) {
         tree.add(8);
         tree.add(2);
         tree.add(11);
@@ -51,7 +51,7 @@ public class Main {
         System.out.println(tree);
     }
 
-    private static void simulateLL(AVLTree<Integer> tree) {
+    private static void simulateRR(AVLTree<Integer> tree) {
         tree.add(11);
         tree.add(6);
         tree.add(16);

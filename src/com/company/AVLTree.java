@@ -61,80 +61,59 @@ public class AVLTree<T extends Comparable> {
         node.get().setLeftNode(balance(node.get().getLeftNode()));
         node.get().setRightNode(balance(node.get().getRightNode()));
 
-        AVLRotation rotation = getNeededRotation(node);
-        if (rotation != AVLRotation.NONE) {
-            TreeNode newroot = null;
-            int factor = node.get().getBalanceFactor();
-            switch (rotation) {
-                case LL: {
-                    newroot = leftLeftRotate(node.get());
-                    break;
-                }
-                case RR: {
-                    newroot = rightRightRotate(node.get());
-                    break;
-                }
-                case LR: {
-                    newroot = leftRightRotate(node.get());
-                    break;
-                }
-                case RL: {
-                    newroot = rightLeftRotate(node.get());
-                    break;
-                }
-            }
+        if (!node.get().isBalanced()) {
+            TreeNode<T> newroot = null;
+
+            if (needsLeftLeft(node)) newroot = leftLeftRotate(node.get());
+            else if (needsRightRight(node)) newroot = rightRightRotate(node.get());
+            else if (needsLeftRight(node)) newroot = leftRightRotate(node.get());
+            else if (needsRightLeft(node)) newroot = rightLeftRotate(node.get());
+
+            if(newroot == null) throw new NullPointerException();
             node = Optional.of(newroot);
         }
+
         return node;
     }
 
-    private AVLRotation getNeededRotation(Optional<TreeNode<T>> needer) {
-        if (!needer.isPresent()) return AVLRotation.NONE;
-        if (needsLeftLeft(needer)) return AVLRotation.LL;
-        if (needsRightRight(needer)) return AVLRotation.RR;
-        if (needsLeftRight(needer)) return AVLRotation.LR;
-        if (needsRightLeft(needer)) return AVLRotation.RL;
-        return AVLRotation.NONE;
-    }
-
     private boolean needsLeftLeft(Optional<TreeNode<T>> needer) {
-        return needer.filter(tTreeNode -> tTreeNode.getBalanceFactor() == 2 && tTreeNode.getLeftNode().get().getBalanceFactor() == 1).isPresent();
+        return needer.isPresent() && needer.get().getRightNode().isPresent() && needer.get().getBalanceFactor() == 2 && needer.get().getRightNode().get().getBalanceFactor() == 1;
     }
 
     private boolean needsRightRight(Optional<TreeNode<T>> needer) {
-        return needer.filter(tTreeNode -> tTreeNode.getBalanceFactor() == -2 && tTreeNode.getRightNode().get().getBalanceFactor() == -1).isPresent();
+        return needer.isPresent() && needer.get().getLeftNode().isPresent() && needer.get().getBalanceFactor() == -2 && needer.get().getLeftNode().get().getBalanceFactor() == -1;
     }
 
     private boolean needsLeftRight(Optional<TreeNode<T>> needer) {
-        return needer.filter(tTreeNode -> tTreeNode.getBalanceFactor() == -2 && tTreeNode.getLeftNode().get().getBalanceFactor() == 1).isPresent();
+        return needer.isPresent() && needer.get().getLeftNode().isPresent() && needer.get().getBalanceFactor() == -2 && needer.get().getLeftNode().get().getBalanceFactor() == 1;
     }
 
     private boolean needsRightLeft(Optional<TreeNode<T>> needer) {
-        return needer.filter(tTreeNode -> tTreeNode.getBalanceFactor() == 2 && tTreeNode.getRightNode().get().getBalanceFactor() == -1).isPresent();
+        return needer.isPresent() && needer.get().getRightNode().isPresent() && needer.get().getBalanceFactor() == 2 && needer.get().getRightNode().get().getBalanceFactor() == -1;
     }
 
     public TreeNode<T> leftLeftRotate(TreeNode toBalance) {
-        TreeNode<T> balanced = (TreeNode<T>) toBalance.getLeftNode().get();
-        toBalance.setLeftNode(balanced.getRightNode());
-        balanced.setRightNode(Optional.of(toBalance));
-        return balanced;
-    }
-
-    private TreeNode<T> rightRightRotate(TreeNode toBalance) {
         TreeNode<T> balanced = (TreeNode<T>) toBalance.getRightNode().get();
         toBalance.setRightNode(balanced.getLeftNode());
         balanced.setLeftNode(Optional.of(toBalance));
         return balanced;
     }
 
+    private TreeNode<T> rightRightRotate(TreeNode toBalance) {
+        TreeNode<T> balanced = (TreeNode<T>) toBalance.getLeftNode().get();
+        toBalance.setLeftNode(balanced.getRightNode());
+        balanced.setRightNode(Optional.of(toBalance));
+        return balanced;
+    }
+
     private TreeNode<T> leftRightRotate(TreeNode toBalance) {
-        toBalance.setLeftNode(Optional.of(rightRightRotate((TreeNode) toBalance.getLeftNode().get())));
-        return leftLeftRotate(toBalance);
+        toBalance.setLeftNode(Optional.of(leftLeftRotate((TreeNode) toBalance.getLeftNode().get())));
+        return rightRightRotate(toBalance);
     }
 
     private TreeNode<T> rightLeftRotate(TreeNode toBalance) {
-        toBalance.setRightNode(Optional.of(leftLeftRotate((TreeNode) toBalance.getRightNode().get())));
-        return rightRightRotate(toBalance);
+        toBalance.setRightNode(Optional.of(rightRightRotate((TreeNode) toBalance.getRightNode().get())));
+        return leftLeftRotate(toBalance);
     }
 
     public int getDepth() {
